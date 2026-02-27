@@ -1,0 +1,19 @@
+# data files (contain real sales data – never commit)
+sample_data.csv
+*.xlsx
+*.xls
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# macOS
+.DS_Store
+
+# Output PDFs
+clearance_plan_*.pdf
+clearance_schedule_*.csv
