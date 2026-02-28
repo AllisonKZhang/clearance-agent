@@ -53,6 +53,35 @@ st.markdown("""
     .note         { font-size:0.82rem; color:#666; font-style:italic; }
     footer        { visibility:hidden; }
 </style>
+<script>
+(function() {
+    function translateUploader() {
+        document.querySelectorAll('[data-testid="stFileUploaderDropzone"] span').forEach(function(el) {
+            if (el.childElementCount === 0) {
+                if (el.textContent.trim() === 'Drag and drop file here') {
+                    el.textContent = '拖拽文件到此处';
+                } else if (el.textContent.trim() === 'Drag and drop files here') {
+                    el.textContent = '拖拽文件到此处';
+                }
+            }
+        });
+        document.querySelectorAll('[data-testid="stFileUploaderDropzone"] small').forEach(function(el) {
+            var t = el.textContent;
+            if (t.includes('Limit') && t.includes('per file')) {
+                el.textContent = t.replace('Limit', '大小限制').replace('per file', '每个文件');
+            }
+        });
+        document.querySelectorAll('[data-testid="stFileUploaderDropzone"] button').forEach(function(btn) {
+            if (btn.textContent.trim() === 'Browse files') {
+                btn.textContent = '浏览文件';
+            }
+        });
+    }
+    var observer = new MutationObserver(translateUploader);
+    observer.observe(document.body, { childList: true, subtree: true });
+    translateUploader();
+})();
+</script>
 """, unsafe_allow_html=True)
 
 
@@ -68,8 +97,8 @@ def _metric(label: str, value: str, color: str = "#1e50a0") -> str:
 
 def _template_csv() -> bytes:
     """返回 CSV 数据模板。"""
-    header = ["date", "store_id", "store_name", "sku_id", "product_name",
-              "buying_price", "selling_price", "units_sold"]
+    header = ["日期", "门店编号", "门店", "商品编码", "商品名称",
+              "采购单价", "平均售价", "实销数量"]
     samples = [
         ["2025-09-01", "S001", "良乡时光汇店",  "SKU001", "伊利雪糕70g",   7.50, 14.90, 12],
         ["2025-09-01", "S002", "丰台新广场店",  "SKU001", "伊利雪糕70g",   7.50, 14.90,  9],
@@ -91,7 +120,6 @@ with st.sidebar:
     if logo_path.exists():
         st.image(str(logo_path), width=160)
     st.markdown("## 清仓计划工具")
-    st.markdown("**冰淇淋品类 · 北京**")
     st.divider()
     st.markdown("### 使用说明")
     st.markdown("""

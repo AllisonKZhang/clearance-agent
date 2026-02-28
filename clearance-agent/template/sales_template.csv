@@ -1,11 +1,11 @@
-date,store_id,store_name,sku_id,product_name,buying_price,selling_price,units_sold
-2025-09-01,S001,Liangxiang Store,SKU001,Ice Cream Bar A,7.50,14.90,12
-2025-09-01,S002,Fengtai New Plaza,SKU001,Ice Cream Bar A,7.50,14.90,9
-2025-09-08,S001,Liangxiang Store,SKU001,Ice Cream Bar A,7.50,13.41,14
-2025-09-08,S002,Fengtai New Plaza,SKU001,Ice Cream Bar A,7.50,13.41,11
-2025-09-15,S001,Liangxiang Store,SKU001,Ice Cream Bar A,7.50,11.92,18
-2025-09-15,S002,Fengtai New Plaza,SKU001,Ice Cream Bar A,7.50,11.92,15
-2025-09-01,S001,Liangxiang Store,SKU002,Mango Sorbet 80g,5.20,9.90,20
-2025-09-01,S002,Fengtai New Plaza,SKU002,Mango Sorbet 80g,5.20,9.90,17
-2025-09-08,S001,Liangxiang Store,SKU002,Mango Sorbet 80g,5.20,9.90,22
-2025-09-08,S002,Fengtai New Plaza,SKU002,Mango Sorbet 80g,5.20,8.91,25
+日期,门店编号,门店,商品编码,商品名称,采购单价,平均售价,实销数量
+2025-09-01,S001,良乡时光汇店,SKU001,伊利雪糕70g,7.50,14.90,12
+2025-09-01,S002,丰台新广场店,SKU001,伊利雪糕70g,7.50,14.90,9
+2025-09-08,S001,良乡时光汇店,SKU001,伊利雪糕70g,7.50,13.41,14
+2025-09-08,S002,丰台新广场店,SKU001,伊利雪糕70g,7.50,13.41,11
+2025-09-15,S001,良乡时光汇店,SKU001,伊利雪糕70g,7.50,11.92,18
+2025-09-15,S002,丰台新广场店,SKU001,伊利雪糕70g,7.50,11.92,15
+2025-09-01,S001,良乡时光汇店,SKU002,芒果雪葩80g,5.20,9.90,20
+2025-09-01,S002,丰台新广场店,SKU002,芒果雪葩80g,5.20,9.90,17
+2025-09-08,S001,良乡时光汇店,SKU002,芒果雪葩80g,5.20,9.90,22
+2025-09-08,S002,丰台新广场店,SKU002,芒果雪葩80g,5.20,8.91,25
