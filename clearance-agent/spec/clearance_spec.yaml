@@ -1,0 +1,27 @@
+project:
+  category: ice_cream
+  region: beijing
+  price_scope: chainwide
+
+data_inputs:
+  required_columns:
+    - date
+    - store_id
+    - sku_id
+    - product_name
+    - product_status
+    - buying_price
+    - selling_price
+    - units_sold
+
+elasticity:
+  model: pooled_fixed_effects
+  min_distinct_prices_for_sku_elasticity: 3
+  use_category_fallback: true
+
+clearance:
+  objective: minimize_margin_loss
+  margin_definition: selling_price - buying_price
+  allowed_discount_levels: [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]
+  step_days: 7
+  max_clearance_weeks: 8
