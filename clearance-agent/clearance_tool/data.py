@@ -76,9 +76,9 @@ def week_has_holiday(d: date) -> bool:
     return any((monday + timedelta(days=i)) in _HOLIDAY_MAP for i in range(7))
 
 
-# ── Seasonal indices for ice cream, Beijing ──────────────────────────────────
+# ── Seasonal indices for retail goods, Beijing ───────────────────────────────
 # Monthly multiplier relative to annual average (1.0).
-# Based on typical Northern-China ice-cream consumption patterns:
+# Based on typical Northern-China retail consumption patterns:
 # peak summer, sharp trough in winter.
 SEASONAL_INDEX: dict[int, float] = {
     1: 0.30,  # January  – deep winter
@@ -95,7 +95,7 @@ SEASONAL_INDEX: dict[int, float] = {
    12: 0.30,  # December – winter
 }
 
-# Holiday demand lift for ice cream (+fraction on top of seasonal base)
+# Holiday demand lift for retail goods (+fraction on top of seasonal base)
 HOLIDAY_LIFT: dict[str, float] = {
     "Spring Festival":  0.05,   # family gatherings – mild lift
     "Labour Day":       0.15,   # outdoor activities

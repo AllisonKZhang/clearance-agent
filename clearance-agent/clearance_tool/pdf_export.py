@@ -138,7 +138,7 @@ def generate_pdf(plan: ClearancePlan) -> bytes:
         ("Max duration",  "8 weeks"),
         ("Discount steps","0%  10%  20%  30%  40%  50%  (7-day intervals)"),
         ("Objective",     "Maximise margin while clearing all inventory within 8 weeks"),
-        ("Seasonal adj.", "Monthly ice-cream demand indices (Beijing) + public-holiday lifts applied"),
+        ("Seasonal adj.", "Monthly seasonal demand indices (Beijing) + public-holiday lifts applied"),
     ]
     for k, v in inputs:
         pdf.set_font("Helvetica", "B", 8)
@@ -259,7 +259,7 @@ def generate_pdf(plan: ClearancePlan) -> bytes:
         0, 4,
         "Notes: Demand model Q = baseline x (1 - discount)^elasticity.  "
         "Baseline is the chain-wide weekly run rate from the most recent 4 weeks, adjusted for Beijing seasonal "
-        "ice-cream demand indices (peak Jul/Aug, trough Jan/Dec) and public-holiday demand lifts "
+        "seasonal demand indices (peak Jul/Aug, trough Jan/Dec) and public-holiday demand lifts "
         "(National Day +20%, Labour Day +15%, etc.).  "
         "Elasticity estimated via pooled fixed-effects OLS with store and month controls; "
         "category fallback applied when SKU-level data is insufficient.  "
