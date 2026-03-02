@@ -91,7 +91,6 @@ with st.sidebar:
     if logo_path.exists():
         st.image(str(logo_path), width=160)
     st.markdown("## 清仓计划工具")
-    st.markdown("**冰淇淋品类 · 北京**")
     st.divider()
     st.markdown("### 使用说明")
     st.markdown("""
