@@ -111,7 +111,7 @@ HOLIDAY_LIFT: dict[str, float] = {
 REQUIRED_COLS = {
     "date":          ["date", "日期", "Date"],
     "store_id":      ["store_id", "门店编号", "Store ID", "StoreID"],
-    "store_name":    ["store_name", "门店", "Store Name", "StoreName"],
+    "store_name":    ["store_name", "门店名称", "门店", "Store Name", "StoreName"],
     "sku_id":        ["sku_id", "商品编码", "SKU ID", "SKUID", "sku"],
     "product_name":  ["product_name", "商品名称", "Product Name", "ProductName"],
     "buying_price":  ["buying_price", "采购单价", "Cost", "cost",
