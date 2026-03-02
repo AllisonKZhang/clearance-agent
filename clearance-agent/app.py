@@ -52,6 +52,30 @@ st.markdown("""
     .red          { color:#a01e1e; }
     .note         { font-size:0.82rem; color:#666; font-style:italic; }
     footer        { visibility:hidden; }
+
+    /* ── File uploader: localize to Chinese ── */
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > span:first-of-type {
+        font-size: 0 !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > span:first-of-type::after {
+        content: "将 CSV 文件拖拽至此处";
+        font-size: 14px;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > span:last-of-type {
+        font-size: 0 !important;
+    }
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > span:last-of-type::after {
+        content: "每个文件最大 50MB · 仅支持 CSV";
+        font-size: 12px;
+        color: #888;
+    }
+    [data-testid="stFileUploaderDropzone"] button span {
+        font-size: 0 !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button span::after {
+        content: "浏览文件";
+        font-size: 14px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -68,8 +92,8 @@ def _metric(label: str, value: str, color: str = "#1e50a0") -> str:
 
 def _template_csv() -> bytes:
     """返回 CSV 数据模板。"""
-    header = ["date", "store_id", "store_name", "sku_id", "product_name",
-              "buying_price", "selling_price", "units_sold"]
+    header = ["日期", "门店编号", "门店名称", "商品编码", "商品名称",
+              "采购单价", "平均售价", "实销数量"]
     samples = [
         ["2025-09-01", "S001", "良乡时光汇店",  "SKU001", "伊利雪糕70g",   7.50, 14.90, 12],
         ["2025-09-01", "S002", "丰台新广场店",  "SKU001", "伊利雪糕70g",   7.50, 14.90,  9],
@@ -91,7 +115,6 @@ with st.sidebar:
     if logo_path.exists():
         st.image(str(logo_path), width=160)
     st.markdown("## 清仓计划工具")
-    st.markdown("**冰淇淋品类 · 北京**")
     st.divider()
     st.markdown("### 使用说明")
     st.markdown("""
