@@ -235,7 +235,7 @@ def estimate_elasticity(
         sku_e, method = _sku_elasticity(obs, min_price_points)
         if sku_e is None:
             sku_e  = cat_e
-            method = "Category fallback"
+            method = "类目弹性备用值"
 
         results[sid] = {
             "elasticity": sku_e,
@@ -274,7 +274,7 @@ def _sku_elasticity(
     if math.isnan(e) or math.isinf(e) or e > 0 or abs(e) > ELASTICITY_ABS_CAP:
         return None, ""
 
-    return e, f"SKU store-FE OLS ({len(obs)} obs)"
+    return e, f"SKU门店固定效应估算（{len(obs)}个观测值）"
 
 
 def _category_elasticity(sku_panels: dict[str, list[dict]]) -> float:

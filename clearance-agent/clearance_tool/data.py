@@ -18,34 +18,34 @@ from typing import Any
 # Dates are the *actual* rest days gazetted by the State Council.
 # We mark entire Golden-Week blocks so holiday_week catches the run-up.
 _HOLIDAY_RANGES: list[tuple[date, date, str]] = [
-    # New Year
-    (date(2023,12,30), date(2024, 1, 1), "New Year"),
-    (date(2024,12,28), date(2025, 1, 1), "New Year"),
-    (date(2025,12,31), date(2026, 1, 2), "New Year"),
-    # Spring Festival (Lunar New Year)
-    (date(2024, 2, 10), date(2024, 2,17), "Spring Festival"),
-    (date(2025, 1, 28), date(2025, 2, 4), "Spring Festival"),
-    (date(2026, 2, 17), date(2026, 2,23), "Spring Festival"),
-    # Qingming (Tomb Sweeping)
-    (date(2024, 4,  4), date(2024, 4, 6), "Qingming"),
-    (date(2025, 4,  4), date(2025, 4, 6), "Qingming"),
-    (date(2026, 4,  4), date(2026, 4, 6), "Qingming"),
-    # Labour Day
-    (date(2024, 5,  1), date(2024, 5, 5), "Labour Day"),
-    (date(2025, 5,  1), date(2025, 5, 5), "Labour Day"),
-    (date(2026, 5,  1), date(2026, 5, 5), "Labour Day"),
-    # Dragon Boat Festival
-    (date(2024, 6, 10), date(2024, 6,10), "Dragon Boat"),
-    (date(2025, 5, 31), date(2025, 6, 2), "Dragon Boat"),
-    (date(2026, 6, 19), date(2026, 6,21), "Dragon Boat"),
-    # Mid-Autumn Festival
-    (date(2024, 9, 15), date(2024, 9,17), "Mid-Autumn"),
-    (date(2025,10,  4), date(2025,10, 6), "Mid-Autumn"),
-    (date(2026, 9, 24), date(2026, 9,26), "Mid-Autumn"),
-    # National Day Golden Week
-    (date(2024,10,  1), date(2024,10, 7), "National Day"),
-    (date(2025,10,  1), date(2025,10, 7), "National Day"),
-    (date(2026,10,  1), date(2026,10, 7), "National Day"),
+    # 元旦
+    (date(2023,12,30), date(2024, 1, 1), "元旦"),
+    (date(2024,12,28), date(2025, 1, 1), "元旦"),
+    (date(2025,12,31), date(2026, 1, 2), "元旦"),
+    # 春节
+    (date(2024, 2, 10), date(2024, 2,17), "春节"),
+    (date(2025, 1, 28), date(2025, 2, 4), "春节"),
+    (date(2026, 2, 17), date(2026, 2,23), "春节"),
+    # 清明节
+    (date(2024, 4,  4), date(2024, 4, 6), "清明节"),
+    (date(2025, 4,  4), date(2025, 4, 6), "清明节"),
+    (date(2026, 4,  4), date(2026, 4, 6), "清明节"),
+    # 劳动节
+    (date(2024, 5,  1), date(2024, 5, 5), "劳动节"),
+    (date(2025, 5,  1), date(2025, 5, 5), "劳动节"),
+    (date(2026, 5,  1), date(2026, 5, 5), "劳动节"),
+    # 端午节
+    (date(2024, 6, 10), date(2024, 6,10), "端午节"),
+    (date(2025, 5, 31), date(2025, 6, 2), "端午节"),
+    (date(2026, 6, 19), date(2026, 6,21), "端午节"),
+    # 中秋节
+    (date(2024, 9, 15), date(2024, 9,17), "中秋节"),
+    (date(2025,10,  4), date(2025,10, 6), "中秋节"),
+    (date(2026, 9, 24), date(2026, 9,26), "中秋节"),
+    # 国庆节
+    (date(2024,10,  1), date(2024,10, 7), "国庆节"),
+    (date(2025,10,  1), date(2025,10, 7), "国庆节"),
+    (date(2026,10,  1), date(2026,10, 7), "国庆节"),
 ]
 
 def _build_holiday_set() -> dict[date, str]:
@@ -97,13 +97,13 @@ SEASONAL_INDEX: dict[int, float] = {
 
 # Holiday demand lift for ice cream (+fraction on top of seasonal base)
 HOLIDAY_LIFT: dict[str, float] = {
-    "Spring Festival":  0.05,   # family gatherings – mild lift
-    "Labour Day":       0.15,   # outdoor activities
-    "Dragon Boat":      0.10,
-    "Mid-Autumn":       0.08,
-    "National Day":     0.20,   # Golden Week – shopping surge
-    "Qingming":         0.05,
-    "New Year":         0.10,
+    "春节":   0.05,   # 家庭聚会，需求小幅提升
+    "劳动节": 0.15,   # 户外活动，需求明显提升
+    "端午节": 0.10,
+    "中秋节": 0.08,
+    "国庆节": 0.20,   # 黄金周，购物需求大幅提升
+    "清明节": 0.05,
+    "元旦":   0.10,
 }
 
 
@@ -174,12 +174,12 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
     text = raw.decode("utf-8-sig", errors="replace")
     reader = csv.DictReader(io.StringIO(text))
     if reader.fieldnames is None:
-        return [], ["Could not read CSV header."]
+        return [], ["无法读取 CSV 标题行，请检查文件格式。"]
     col_map = _map_columns(list(reader.fieldnames))
     missing = [c for c in REQUIRED_COLS if c not in col_map]
     if missing:
-        return [], [f"Missing required columns: {', '.join(missing)}. "
-                    f"Please use the provided template."]
+        return [], [f"缺少必要列：{', '.join(missing)}。"
+                    f"请使用左侧边栏提供的数据模板。"]
     rows, errors = [], []
     for i, raw_row in enumerate(reader, start=2):
         row: dict[str, Any] = {}
@@ -190,7 +190,7 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
         # date
         d = _parse_date(row["date"])
         if d is None:
-            errors.append(f"Row {i}: cannot parse date '{row['date']}'")
+            errors.append(f"第 {i} 行：无法解析日期"{row['date']}"")
             ok = False
         else:
             row["date"] = d
@@ -206,7 +206,7 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
         for col in ("buying_price", "selling_price", "units_sold"):
             v = _to_float(row[col])
             if v is None:
-                errors.append(f"Row {i}: cannot parse {col} '{row[col]}'")
+                errors.append(f"第 {i} 行：无法解析字段"{col}"的值"{row[col]}"")
                 ok = False
             else:
                 row[col] = v
