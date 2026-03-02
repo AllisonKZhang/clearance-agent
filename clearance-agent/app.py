@@ -326,7 +326,7 @@ if st.button("🚀  生成清仓方案", type="primary", use_container_width=Tru
     st.table(tbl)
 
     # 弹性说明
-    if "fallback" in e_meth.lower() or "备用" in e_meth:
+    if "备用" in e_meth:
         st.info(
             f"ℹ️  **弹性系数说明：** {e_meth}（e = {e_val:.2f}）。"
             "该 SKU 店内价格变动不足，已自动使用类目弹性备用值。"
