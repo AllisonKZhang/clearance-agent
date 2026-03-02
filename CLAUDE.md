@@ -4,24 +4,33 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Repository Overview
 
-This repository is set up for Claude Code on the web. Update this section with a description of your project.
+A multi-agent system built on the Anthropic Agents SDK (Python) that automatically generates ice cream clearance schedules for Beijing chain stores using price elasticity modeling.
+
+The project coordinates five specialist sub-agents (DataEngineer, ElasticityEngineer, ClearanceEngineer, AppEngineer, QA) via a central Orchestrator. It uses a pooled fixed-effects elasticity model to optimize clearance pricing with the objective of minimizing margin loss.
+
+Key components:
+- `clearance-agent/agent/` — Agent definitions and orchestration
+- `clearance-agent/clearance_tool/` — Core Python modules (data, elasticity, planner, pdf_export)
+- `clearance-agent/app.py` — Streamlit frontend
+- `clearance-agent/spec/clearance_spec.yaml` — Business rules and configuration
 
 ## Development Commands
 
-Update these commands to match your project's actual setup:
-
 ```bash
 # Install dependencies
-# npm install / pip install -r requirements.txt / etc.
+pip install -r clearance-agent/requirements.txt
+
+# Run the Streamlit app
+cd clearance-agent && streamlit run app.py
+
+# Run the orchestrator agent
+cd clearance-agent && python -m agent.builder
 
 # Run tests
-# npm test / pytest / cargo test / etc.
+cd clearance-agent && pytest
 
 # Run linter
-# npm run lint / flake8 / cargo clippy / etc.
-
-# Build
-# npm run build / etc.
+cd clearance-agent && flake8 .
 ```
 
 ## Code Style
