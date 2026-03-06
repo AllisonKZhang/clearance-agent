@@ -204,27 +204,41 @@ def _decode_csv(raw: bytes) -> str:
     return raw.decode("utf-8-sig", errors="replace")
 
 
-def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
+def _process_rows(
+    header: list[str],
+    data_iter: Any,
+    start_line: int = 2,
+) -> tuple[list[dict], list[str]]:
     """
-    Parse CSV bytes.  Returns (rows, errors).
-    Each row is a dict with canonical column names + enriched features.
+    Shared row-processing logic used by both CSV and XLSX loaders.
+    header     — list of column-name strings (may contain None for blank cols)
+    data_iter  — iterable of rows; each row is either a dict (CSV) or a
+                 sequence (XLSX) aligned with header.
+    start_line — row number used in error messages (default 2, i.e. after header).
     """
-    text = _decode_csv(raw)
-    reader = csv.DictReader(io.StringIO(text))
-    if reader.fieldnames is None:
-        return [], ["无法读取 CSV 标题行，请检查文件格式。"]
-    col_map = _map_columns(list(reader.fieldnames))
+    col_map = _map_columns([h for h in header if h is not None])
     missing = [c for c in REQUIRED_COLS if c not in col_map]
     if missing:
         missing_cn = [REQUIRED_COLS[c][1] for c in missing]
         return [], [f"缺少必要列：{', '.join(missing_cn)}。"
                     f"请使用左侧边栏提供的数据模板。"]
+
     rows, errors = [], []
-    for i, raw_row in enumerate(reader, start=2):
+    for i, raw_row in enumerate(data_iter, start=start_line):
         row: dict[str, Any] = {}
         ok = True
-        for canon, actual in col_map.items():
-            row[canon] = raw_row.get(actual, "").strip()
+
+        # Build row dict — handle both dict rows (CSV) and sequence rows (XLSX)
+        if isinstance(raw_row, dict):
+            for canon, actual in col_map.items():
+                v = raw_row.get(actual, "")
+                row[canon] = "" if v is None else str(v).strip()
+        else:
+            # sequence row — zip with header
+            raw_dict = {h: v for h, v in zip(header, raw_row) if h is not None}
+            for canon, actual in col_map.items():
+                v = raw_dict.get(actual)
+                row[canon] = "" if v is None else str(v).strip()
 
         # date
         d = _parse_date(row["date"])
@@ -282,10 +296,23 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
     return rows, errors
 
 
+def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
+    """
+    Parse CSV bytes.  Returns (rows, errors).
+    Each row is a dict with canonical column names + enriched features.
+    """
+    text = _decode_csv(raw)
+    reader = csv.DictReader(io.StringIO(text))
+    if reader.fieldnames is None:
+        return [], ["无法读取 CSV 标题行，请检查文件格式。"]
+    data = list(reader)
+    return _process_rows(list(reader.fieldnames), data)
+
+
 def load_xlsx_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
     """
     Parse Excel (.xlsx) bytes.  Returns (rows, errors).
-    Re-uses the same validation / enrichment logic as load_csv_bytes.
+    Directly maps openpyxl values — no CSV round-trip.
     Requires openpyxl (listed in requirements.txt).
     """
     try:
@@ -303,12 +330,11 @@ def load_xlsx_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
     if not rows_raw:
         return [], ["XLSX 文件为空。"]
 
-    # Convert to CSV-like text so we can reuse load_csv_bytes
-    buf = io.StringIO()
-    w = csv.writer(buf)
-    for row in rows_raw:
-        w.writerow([("" if v is None else str(v)) for v in row])
-    return load_csv_bytes(buf.getvalue().encode("utf-8"))
+    # First row is the header; pass openpyxl values directly (no str conversion
+    # on the header so we preserve the exact Unicode characters Excel stored)
+    header = [("" if v is None else str(v)) for v in rows_raw[0]]
+    data_rows = rows_raw[1:]
+    return _process_rows(header, data_rows)
 
 
 def _season(month: int) -> str:
