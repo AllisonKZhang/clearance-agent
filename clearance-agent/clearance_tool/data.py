@@ -206,7 +206,8 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
     col_map = _map_columns(list(reader.fieldnames))
     missing = [c for c in REQUIRED_COLS if c not in col_map]
     if missing:
-        return [], [f"缺少必要列：{', '.join(missing)}。"
+        missing_cn = [REQUIRED_COLS[c][1] for c in missing]
+        return [], [f"缺少必要列：{', '.join(missing_cn)}。"
                     f"请使用左侧边栏提供的数据模板。"]
     rows, errors = [], []
     for i, raw_row in enumerate(reader, start=2):
