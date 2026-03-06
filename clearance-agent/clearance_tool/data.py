@@ -220,8 +220,10 @@ def _process_rows(
     missing = [c for c in REQUIRED_COLS if c not in col_map]
     if missing:
         missing_cn = [REQUIRED_COLS[c][1] for c in missing]
+        found_cols = ", ".join(repr(h) for h in header[:8] if h)
         return [], [f"缺少必要列：{', '.join(missing_cn)}。"
-                    f"请使用左侧边栏提供的数据模板。"]
+                    f"请使用左侧边栏提供的数据模板。"
+                    f"（文件实际列名前8列：{found_cols}）"]
 
     rows, errors = [], []
     for i, raw_row in enumerate(data_iter, start=start_line):
