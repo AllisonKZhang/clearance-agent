@@ -190,7 +190,7 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
         # date
         d = _parse_date(row["date"])
         if d is None:
-            errors.append(f"第 {i} 行：无法解析日期"{row['date']}"")
+            errors.append(f"第 {i} 行：无法解析日期\"{row['date']}\"")
             ok = False
         else:
             row["date"] = d
@@ -206,7 +206,7 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
         for col in ("buying_price", "selling_price", "units_sold"):
             v = _to_float(row[col])
             if v is None:
-                errors.append(f"第 {i} 行：无法解析字段"{col}"的值"{row[col]}"")
+                errors.append(f"第 {i} 行：无法解析字段\"{col}\"的值\"{row[col]}\"")
                 ok = False
             else:
                 row[col] = v

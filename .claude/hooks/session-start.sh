@@ -8,12 +8,6 @@ fi
 
 echo "Session start hook running..."
 
-# No dependencies to install yet.
-# When you add a package manager to your project, install dependencies here.
-# Examples:
-#   npm install
-#   pip install -r requirements.txt
-#   bundle install
-#   cargo fetch
+pip install -r "$CLAUDE_PROJECT_DIR/clearance-agent/requirements.txt"
 
 echo "Session start hook complete."
