@@ -194,12 +194,22 @@ def _to_float(v: Any) -> float | None:
 
 # ── Public API ────────────────────────────────────────────────────────────────
 
+def _decode_csv(raw: bytes) -> str:
+    """Decode CSV bytes trying UTF-8 (with/without BOM) then GBK/GB18030."""
+    for enc in ("utf-8-sig", "gb18030"):
+        try:
+            return raw.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    return raw.decode("utf-8-sig", errors="replace")
+
+
 def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
     """
     Parse CSV bytes.  Returns (rows, errors).
     Each row is a dict with canonical column names + enriched features.
     """
-    text = raw.decode("utf-8-sig", errors="replace")
+    text = _decode_csv(raw)
     reader = csv.DictReader(io.StringIO(text))
     if reader.fieldnames is None:
         return [], ["无法读取 CSV 标题行，请检查文件格式。"]
