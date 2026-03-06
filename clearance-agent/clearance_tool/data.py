@@ -3,7 +3,7 @@ data.py – Load, validate, and enrich sales data with seasonal / holiday featur
 
 Expected columns (see template/sales_template.csv):
   date, store_id, store_name, sku_id, product_name,
-  buying_price, selling_price, units_sold
+  buying_price (or computable from margin columns), selling_price, units_sold
 """
 
 from __future__ import annotations
@@ -107,6 +107,31 @@ HOLIDAY_LIFT: dict[str, float] = {
 }
 
 
+# ── Beijing monthly weather data ──────────────────────────────────────────────
+# Average temperature (°C) and precipitation (mm) for Beijing by month.
+WEATHER_TEMP_C: dict[int, float] = {
+    1: -3.0, 2:  0.0, 3:  7.0, 4: 14.0, 5: 21.0, 6: 26.0,
+    7: 29.0, 8: 27.0, 9: 22.0, 10: 14.0, 11:  5.0, 12: -2.0,
+}
+
+WEATHER_PRECIP_MM: dict[int, float] = {
+    1:   3.0, 2:   5.0, 3:   8.0, 4:  17.0, 5:  33.0, 6:  63.0,
+    7: 173.0, 8: 128.0, 9:  50.0, 10: 17.0, 11:   6.0, 12:   3.0,
+}
+
+
+def _build_weather_index() -> dict[int, float]:
+    """Temperature-based demand index normalised so the annual mean = 1.0."""
+    raw = {m: max(0.0, WEATHER_TEMP_C[m] + 5) for m in range(1, 13)}
+    mean = sum(raw.values()) / 12
+    if mean == 0:
+        return {m: 1.0 for m in range(1, 13)}
+    return {m: round(v / mean, 2) for m, v in raw.items()}
+
+
+WEATHER_INDEX: dict[int, float] = _build_weather_index()
+
+
 # ── Column aliases ────────────────────────────────────────────────────────────
 REQUIRED_COLS = {
     "date":          ["date", "日期", "Date"],
@@ -114,8 +139,6 @@ REQUIRED_COLS = {
     "store_name":    ["store_name", "门店", "Store Name", "StoreName"],
     "sku_id":        ["sku_id", "商品编码", "SKU ID", "SKUID", "sku"],
     "product_name":  ["product_name", "商品名称", "Product Name", "ProductName"],
-    "buying_price":  ["buying_price", "采购单价", "Cost", "cost",
-                      "buying price", "未税采购价"],
     "selling_price": ["selling_price", "平均售价", "Selling Price",
                       "selling price", "Price", "price"],
     "units_sold":    ["units_sold", "实销数量", "Units Sold", "units",
@@ -123,8 +146,13 @@ REQUIRED_COLS = {
 }
 
 OPTIONAL_COLS = {
-    "revenue":  ["revenue", "实销金额", "未税实销金额", "Revenue"],
-    "margin":   ["margin",  "毛利",     "未税基础毛利",  "Margin"],
+    # Direct cost column (preferred)
+    "buying_price":  ["buying_price", "采购单价", "Cost", "cost",
+                      "buying price", "未税采购价"],
+    # Financial columns to derive cost when buying_price absent
+    "revenue":       ["revenue", "实销金额", "未税实销金额", "Revenue"],
+    "margin":        ["margin",  "毛利",     "未税基础毛利",  "Margin"],
+    "margin_rate":   ["margin_rate", "毛利率", "未税基础毛利率", "Margin Rate"],
 }
 
 
@@ -202,19 +230,35 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
             row["holiday_name"]    = holiday_name(d)
             row["seasonal_index"]  = SEASONAL_INDEX[d.month]
 
-        # numeric
-        for col in ("buying_price", "selling_price", "units_sold"):
-            v = _to_float(row[col])
+        # numeric required
+        for col in ("selling_price", "units_sold"):
+            v = _to_float(row.get(col, ""))
             if v is None:
-                errors.append(f"第 {i} 行：无法解析字段\"{col}\"的值\"{row[col]}\"")
+                errors.append(f"第 {i} 行：无法解析字段\"{col}\"的值\"{row.get(col, '')}\"")
                 ok = False
             else:
                 row[col] = v
 
-        # optional
-        for col in ("revenue", "margin"):
+        # optional numeric
+        for col in ("buying_price", "revenue", "margin", "margin_rate"):
             v = _to_float(row.get(col, ""))
             row[col] = v  # may be None
+
+        # derive buying_price if absent
+        if ok and row.get("buying_price") is None:
+            rev  = row.get("revenue")
+            mgn  = row.get("margin")
+            rate = row.get("margin_rate")
+            u    = row.get("units_sold")
+            if rev is not None and mgn is not None and u:
+                row["buying_price"] = (rev - mgn) / u
+            elif rev is not None and rate is not None and u:
+                row["buying_price"] = rev * (1.0 - rate) / u
+            else:
+                errors.append(
+                    f"第 {i} 行：无法确定进货价，请提供 buying_price 列，"
+                    "或同时提供 未税实销金额 和 未税基础毛利。")
+                ok = False
 
         # derived: if revenue missing, approximate from selling_price × units
         if ok and row.get("revenue") is None and \
@@ -225,6 +269,35 @@ def load_csv_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
             rows.append(row)
 
     return rows, errors
+
+
+def load_xlsx_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
+    """
+    Parse Excel (.xlsx) bytes.  Returns (rows, errors).
+    Re-uses the same validation / enrichment logic as load_csv_bytes.
+    Requires openpyxl (listed in requirements.txt).
+    """
+    try:
+        import openpyxl
+    except ImportError:
+        return [], ["openpyxl 未安装，无法读取 XLSX 文件。请安装：pip install openpyxl"]
+
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+        ws = wb.active
+        rows_raw = list(ws.iter_rows(values_only=True))
+    except Exception as e:
+        return [], [f"无法读取 XLSX 文件：{e}"]
+
+    if not rows_raw:
+        return [], ["XLSX 文件为空。"]
+
+    # Convert to CSV-like text so we can reuse load_csv_bytes
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    for row in rows_raw:
+        w.writerow([("" if v is None else str(v)) for v in row])
+    return load_csv_bytes(buf.getvalue().encode("utf-8"))
 
 
 def _season(month: int) -> str:
