@@ -220,10 +220,8 @@ def _process_rows(
     missing = [c for c in REQUIRED_COLS if c not in col_map]
     if missing:
         missing_cn = [REQUIRED_COLS[c][1] for c in missing]
-        found_cols = ", ".join(repr(h) for h in header[:8] if h)
         return [], [f"缺少必要列：{', '.join(missing_cn)}。"
-                    f"请使用左侧边栏提供的数据模板。"
-                    f"（文件实际列名前8列：{found_cols}）"]
+                    f"请使用左侧边栏提供的数据模板。"]
 
     rows, errors = [], []
     for i, raw_row in enumerate(data_iter, start=start_line):
@@ -323,7 +321,10 @@ def load_xlsx_bytes(raw: bytes) -> tuple[list[dict], list[str]]:
         return [], ["openpyxl 未安装，无法读取 XLSX 文件。请安装：pip install openpyxl"]
 
     try:
-        wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+        # read_only=True can fail to load the shared-strings table on some
+        # real Excel files, causing string cells to return None.  Use the
+        # full workbook engine instead.
+        wb = openpyxl.load_workbook(io.BytesIO(raw), data_only=True)
         ws = wb.active
         rows_raw = list(ws.iter_rows(values_only=True))
     except Exception as e:
